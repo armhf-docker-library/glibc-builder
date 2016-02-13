@@ -1,0 +1,24 @@
+build:
+  image: armhfbuild/buildpack-deps:jessie-scm
+  commands:
+    - git clone --single-branch --branch master https://github.com/andyshinn/docker-glibc-builder upstream
+    - cd upstream
+    - sed -i 's/FROM ubuntu-debootstrap/FROM armhfbuild\/ubuntu/' Dockerfile
+
+publish:
+  docker:
+    image: armhfplugins/drone-docker:docker-caching
+    context: upstream
+    file: upstream/Dockerfile
+    username: $$DOCKER_USER
+    password: $$DOCKER_PASSWORD
+    email: $$DOCKER_EMAIL
+    repo: armhfbuild/glibc-builder
+
+cache:
+  mount:
+    - /drone/docker
+
+notify:
+  slack:
+    webhook_url: $$SLACK_WEBHOOK_URL
